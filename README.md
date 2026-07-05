@@ -1,22 +1,61 @@
-# eCommerce Backend API
+# 🛒 eCommerce Backend + Frontend
 
-A simple REST API for products and cart built with Express and MongoDB.
+A full-stack eCommerce app with Express, MongoDB, and vanilla JavaScript frontend.
 
-## Setup
-1. Clone the repo
-2. Run `npm install`
-3. Create `.env` with `MONGO_URI=your_mongo_uri`
-4. Run `npm run seed` to add sample data
-5. Run `npm run dev` to start
+---
 
-## Endpoints
-### Products
-- `GET /api/products` – get all
-- `GET /api/products/:id` – get one
-- `POST /api/products` – create
-- `PUT /api/products/:id` – update
-- `DELETE /api/products/:id` – delete
+## 🚀 Features
 
-### Cart
-- `GET /api/cart` – view cart
-- `POST /api/cart/add` – add item `{ "productId": "...", "quantity": 1 }`
+- Product CRUD (create, read, update, delete)
+- Shopping cart (add, view, clear)
+- Checkout with automatic stock reduction
+- Modern responsive frontend
+- Search and filter products
+- Persistent MongoDB database
+- Postman collection included
+
+---
+
+## 🛠️ Tech Stack
+
+Node.js | Express.js | MongoDB | Mongoose | HTML | CSS | JavaScript
+
+---
+
+## 📦 Setup
+
+```bash
+git clone https://github.com/teto1111/ecommerce-backend.git
+cd ecommerce-backend
+
+npm install
+
+Create .env:
+MONGO_URI=mongodb://127.0.0.1:27017/ecommerce
+PORT=5000
+
+npm run seed    # optional: add sample products
+npm run dev     # start server
+
+Open http://localhost:5000
+
+📡 API Endpoints
+Products
+GET /api/products — All products
+
+GET /api/products/:id — Single product
+
+POST /api/products — Create product
+
+PUT /api/products/:id — Update product
+
+DELETE /api/products/:id — Delete product
+
+Cart
+GET /api/cart — View cart
+
+POST /api/cart/add — Add item
+
+DELETE /api/cart/clear — Clear cart
+
+POST /api/cart/checkout — Purchase (reduces stock)
