@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopWave — Modern eCommerce</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo">🛍️ ShopWave</a>
+      <div class="nav-links">
+        <button class="nav-btn active" data-section="products">Products</button>
+        <button class="nav-btn" data-section="cart">
+          Cart <span class="badge" id="cart-count">0</span>
+        </button>
+        <button class="nav-btn nav-btn-primary" data-section="add">+ Add Product</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    
+    <!-- Products Section -->
+    <section id="products-section" class="section active">
+      <div class="section-header">
+        <h2>All Products</h2>
+        <div class="search-bar">
+          <input type="text" id="search" placeholder="Search products...">
+        </div>
+      </div>
+      <div id="product-grid" class="product-grid"></div>
+    </section>
+
+    <!-- Cart Section -->
+    <section id="cart-section" class="section">
+      <div class="section-header">
+        <h2>Your Cart</h2>
+      </div>
+      <div id="cart-container">
+        <div id="cart-items"></div>
+    <div id="cart-summary" class="cart-summary hidden">
+  <div class="cart-total-line">
+    <span>Total</span>
+    <span id="cart-total">$0.00</span>
+  </div>
+  <button id="checkout-btn" class="btn btn-primary btn-full">Checkout</button>
+  <button id="clear-cart" class="btn btn-outline btn-full" style="margin-top:0.5rem;">Clear Cart</button>
+    </div>
+        <p id="empty-cart" class="empty-state">Your cart is empty 🛒</p>
+      </div>
+    </section>
+
+    <!-- Add Product Section -->
+    <section id="add-section" class="section">
+      <div class="section-header">
+        <h2>Add New Product</h2>
+      </div>
+      <form id="add-product-form" class="form-card">
+        <div class="form-group">
+          <label for="name">Product Name *</label>
+          <input type="text" id="name" placeholder="e.g. Wireless Headphones" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price ($) *</label>
+            <input type="number" id="price" placeholder="99.99" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="stock">Stock *</label>
+            <input type="number" id="stock" placeholder="50" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <input type="text" id="category" placeholder="e.g. Electronics">
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" rows="3" placeholder="Product description..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Create Product</button>
+        <p id="form-message" class="form-message"></p>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
