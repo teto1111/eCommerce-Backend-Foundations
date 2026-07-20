@@ -10,6 +10,8 @@ router.get('/:id', ctrl.getCart);
 // POST /carts/:id/items – add items to a cart
 router.post('/:id/items', ctrl.addItem);
 
+router.post('/:id/checkout', ctrl.checkout);
+
 // (Optional) clear cart – not required by rubric but we keep for frontend
 router.delete('/:id/clear', ctrl.clearCart);
 

@@ -3,9 +3,11 @@ let cartId = localStorage.getItem('cartId');
 
 // ===== HELPERS =====
 function showSection(name) {
-  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-  document.getElementById(name + '-section').classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(name + '-section');
+  if (target) target.classList.add('active');
+  
+  document.querySelectorAll('.nav-btn[data-section]').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector(`.nav-btn[data-section="${name}"]`);
   if (activeBtn) activeBtn.classList.add('active');
 }
@@ -174,6 +176,7 @@ async function checkout() {
 // ===== ADD PRODUCT =====
 document.getElementById('add-product-form').addEventListener('submit', async function(e) {
   e.preventDefault();
+  
   const name = document.getElementById('name').value.trim();
   const price = document.getElementById('price').value;
   const stock = document.getElementById('stock').value;
@@ -187,23 +190,40 @@ document.getElementById('add-product-form').addEventListener('submit', async fun
     return;
   }
 
+  messageEl.textContent = 'Creating product...';
+  messageEl.className = 'form-message';
+
   try {
     const res = await fetch(`${API}/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, price: Number(price), stock: Number(stock), category, description })
+      body: JSON.stringify({ 
+        name, 
+        price: Number(price), 
+        stock: Number(stock), 
+        category: category || undefined, 
+        description: description || undefined 
+      })
     });
+    
     const data = await res.json();
+
     if (res.ok) {
       messageEl.textContent = '✅ Product created!';
       messageEl.className = 'form-message success';
       this.reset();
-      showToast('Product added!');
+      
+      // Refresh products and switch to products view
+      await fetchProducts();
+      showSection('products');
+      
+      showToast('Product added! 🎉');
     } else {
       messageEl.textContent = '❌ ' + (data.message || 'Error');
       messageEl.className = 'form-message error';
     }
   } catch (err) {
+    console.error(err);
     messageEl.textContent = '❌ Network error';
     messageEl.className = 'form-message error';
   }
