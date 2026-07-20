@@ -4,6 +4,15 @@ A full-stack eCommerce app with Express, MongoDB, and vanilla JavaScript fronten
 
 ---
 
+## Project Goal
+The eCommerce API provides a backend for an online store, allowing shoppers to browse products, manage a shopping cart, and letting admins add, update, or remove products.
+
+## User Stories
+- As a shopper, I can view all products so that I can decide what to buy.
+- As a shopper, I can create a cart and add items to it so that I can track my intended purchases.
+- As an admin, I can add new products, update existing ones, and delete products so that the store catalogue stays current.
+
+
 ## 🚀 Features
 
 - Product CRUD (create, read, update, delete)
