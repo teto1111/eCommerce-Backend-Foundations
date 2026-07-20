@@ -1,44 +1,56 @@
-const API_URL = 'http://localhost:5000/api';
+const API = 'http://localhost:5000/api';
+let cartId = localStorage.getItem('cartId');
 
-// ===== NAVIGATION =====
-const navButtons = document.querySelectorAll('.nav-btn[data-section]');
-const sections = {
-  products: document.getElementById('products-section'),
-  cart: document.getElementById('cart-section'),
-  add: document.getElementById('add-section')
-};
+// ===== HELPERS =====
+function showSection(name) {
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(name + '-section').classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.nav-btn[data-section="${name}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+}
 
-navButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const section = btn.dataset.section;
-    navButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    Object.values(sections).forEach(s => s.classList.remove('active'));
-    sections[section].classList.add('active');
-    if (section === 'products') fetchProducts();
-    if (section === 'cart') fetchCart();
-  });
-});
-
-// ===== TOAST =====
-function showToast(message, isError = false) {
+function showToast(msg, isError = false) {
   const toast = document.getElementById('toast');
-  toast.textContent = message;
+  toast.textContent = msg;
   toast.style.background = isError ? '#ef4444' : '#1a1a2e';
   toast.classList.remove('hidden');
   clearTimeout(toast._timeout);
   toast._timeout = setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
+// ===== CART HELPERS =====
+async function ensureCart() {
+  if (!cartId) {
+    try {
+      const res = await fetch(`${API}/carts`, { method: 'POST' });
+      const cart = await res.json();
+      cartId = cart._id;
+      localStorage.setItem('cartId', cartId);
+    } catch (err) { console.error(err); }
+  }
+  return cartId;
+}
+
+async function updateCartCount() {
+  await ensureCart();
+  const id = localStorage.getItem('cartId');
+  if (!id) return;
+  try {
+    const res = await fetch(`${API}/carts/${id}`);
+    const cart = await res.json();
+    const count = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+    document.getElementById('cart-count').textContent = count;
+  } catch (e) {}
+}
+
 // ===== PRODUCTS =====
 async function fetchProducts() {
   try {
-    const res = await fetch(`${API_URL}/products`);
+    const res = await fetch(`${API}/products`);
     const products = await res.json();
     renderProducts(products);
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 function renderProducts(products) {
@@ -54,22 +66,21 @@ function renderProducts(products) {
       <p class="product-price">$${Number(p.price).toFixed(2)}</p>
       <p class="product-stock">${p.stock} in stock</p>
       <p class="product-description">${p.description || ''}</p>
-      <button class="btn btn-cart" onclick="addToCart('${p._id}')">
-        🛒 Add to Cart
-      </button>
+      <button class="btn btn-cart" onclick="addToCart('${p._id}')">🛒 Add to Cart</button>
     </div>
   `).join('');
 }
 
 // ===== CART =====
 async function fetchCart() {
+  await ensureCart();
+  const id = localStorage.getItem('cartId');
+  if (!id) return;
   try {
-    const res = await fetch(`${API_URL}/cart`);
+    const res = await fetch(`${API}/carts/${id}`);
     const cart = await res.json();
     renderCart(cart);
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 }
 
 function renderCart(cart) {
@@ -114,57 +125,51 @@ function renderCart(cart) {
 }
 
 async function addToCart(productId) {
+  await ensureCart();
+  const id = localStorage.getItem('cartId');
   try {
-    const res = await fetch(`${API_URL}/cart/add`, {
+    const res = await fetch(`${API}/carts/${id}/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId, quantity: 1 })
     });
     if (res.ok) {
       showToast('✅ Added to cart!');
-      fetchCart(); // update cart badge
+      fetchCart();
     } else {
       const err = await res.json();
       showToast('❌ ' + err.message, true);
     }
-  } catch (err) {
-    showToast('❌ Network error', true);
-  }
+  } catch (err) { showToast('❌ Network error', true); }
 }
 
-// ----- Clear Cart -----
-document.getElementById('clear-cart').addEventListener('click', async () => {
+async function clearCart() {
+  const id = localStorage.getItem('cartId');
+  if (!id) return;
   try {
-    const res = await fetch(`${API_URL}/cart/clear`, { method: 'DELETE' });
+    const res = await fetch(`${API}/carts/${id}/clear`, { method: 'DELETE' });
     if (res.ok) {
       fetchCart();
       showToast('Cart cleared');
-    } else {
-      const err = await res.json();
-      showToast('❌ ' + err.message, true);
     }
-  } catch (err) {
-    showToast('❌ Network error', true);
-  }
-});
+  } catch (err) { console.error(err); }
+}
 
-// ----- Checkout -----
-document.getElementById('checkout-btn').addEventListener('click', async () => {
-  if (!confirm('Confirm purchase? This will reduce stock and clear your cart.')) return;
+async function checkout() {
+  const id = localStorage.getItem('cartId');
+  if (!id) return showToast('Cart is empty', true);
   try {
-    const res = await fetch(`${API_URL}/cart/checkout`, { method: 'POST' });
+    const res = await fetch(`${API}/carts/${id}/checkout`, { method: 'POST' });
     const data = await res.json();
     if (res.ok) {
       showToast('🎉 Purchase successful!');
-      fetchCart();          // updates cart display (should be empty now)
-      fetchProducts();      // reload products to reflect new stock counts
+      fetchCart();
+      fetchProducts();
     } else {
       showToast('❌ ' + data.message, true);
     }
-  } catch (err) {
-    showToast('❌ Network error', true);
-  }
-});
+  } catch (err) { showToast('❌ Network error', true); }
+}
 
 // ===== ADD PRODUCT =====
 document.getElementById('add-product-form').addEventListener('submit', async function(e) {
@@ -183,7 +188,7 @@ document.getElementById('add-product-form').addEventListener('submit', async fun
   }
 
   try {
-    const res = await fetch(`${API_URL}/products`, {
+    const res = await fetch(`${API}/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, price: Number(price), stock: Number(stock), category, description })
@@ -208,18 +213,33 @@ document.getElementById('add-product-form').addEventListener('submit', async fun
 document.getElementById('search').addEventListener('input', async function(e) {
   const query = e.target.value.toLowerCase();
   try {
-    const res = await fetch(`${API_URL}/products`);
+    const res = await fetch(`${API}/products`);
     const products = await res.json();
     const filtered = products.filter(p =>
       p.name.toLowerCase().includes(query) ||
       (p.category && p.category.toLowerCase().includes(query))
     );
     renderProducts(filtered);
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) { console.error(err); }
 });
 
-// ===== INIT =====
-fetchProducts();
-fetchCart();
+// ===== NAVIGATION =====
+document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const section = btn.dataset.section;
+    showSection(section);
+    if (section === 'products') fetchProducts();
+    if (section === 'cart') fetchCart();
+  });
+});
+
+document.getElementById('clear-cart').addEventListener('click', clearCart);
+document.getElementById('checkout-btn').addEventListener('click', checkout);
+
+// ===== INITIAL LOAD =====
+async function init() {
+  await ensureCart();
+  fetchProducts();
+  updateCartCount();
+}
+init();
